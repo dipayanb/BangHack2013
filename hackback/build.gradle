@@ -1,0 +1,149 @@
+apply plugin: 'scala'
+apply plugin: 'eclipse'
+apply plugin: 'application'
+apply plugin: 'project-report'
+
+defaultTasks 'jar'
+
+sourceCompatibility = 1.7
+
+
+group = "hackback"
+version = "SNAPSHOT"
+
+
+project.ext {
+    snapshots = "${System.properties['user.home']}/.hackback"
+    orderEntryType = 'module-library'
+    gradleLibraryId = 'Gradle Libraries'
+}
+
+configurations {
+    compile.visible = true
+    compile.exclude module: 'ehcache-terracotta'
+    deployerJars
+}
+
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'eu.appsatori:gradle-fatjar-plugin:0.2-rc1'
+    }
+}
+
+apply plugin: 'fatjar'
+
+
+fatJarPrepareFiles {
+    include 'META-INF/spring.handlers'
+    include 'META-INF/spring.schemas'
+    exclude 'META-INF/*.SF'
+    exclude 'META-INF/*.DSA'
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+
+    add(new org.apache.ivy.plugins.resolver.FileSystemResolver()) {
+        name = 'snapshotsRepository'
+        validate = true
+        descriptor = 'required'
+        changingPattern = ".*SNAPSHOT.*"
+        addIvyPattern "$snapshots/[organisation]/[module]/ivy-[revision].xml"
+        addArtifactPattern "$snapshots/[organisation]/[module]/[type]s/[artifact]-[revision].[ext]"
+        checkmodified = true
+    }
+    maven {
+        url "http://repo.typesafe.com/typesafe/releases/"
+    }
+
+
+}
+
+
+uploadArchives {
+    repositories {
+        add project.repositories.snapshotsRepository
+        if (project.hasProperty("push")) {
+            mavenDeployer {
+                configuration = configurations.deployerJars
+                repository(url: "ftp://50.57.234.214/maven2") {
+                    authentication(userName: "mvn", password: "muhiverowz")
+                }
+            }
+        }
+    }
+
+}
+
+
+dependencies {
+    compile 'org.scala-lang:scala-library:2.10.2'
+    compile group: 'com.typesafe.akka', name: 'akka-actor_2.10', version: '2.2.1'
+    compile group: 'org.scala-lang', name: 'scala-library', version: '2.10.2'
+    compile 'com.google.code.gson:gson:2.2.4'
+    compile "org.scalatest:scalatest_2.10:1.9.2"
+    compile 'net.databinder.dispatch:dispatch-core_2.10:0.11.0'
+    compile 'com.memetix:microsoft-translator-java-api:0.6.2'
+    compile 'commons-logging:commons-logging:1.1.1'
+    compile 'com.google.code.gson:gson:2.2.4'
+    compile 'org.apache.httpcomponents:httpclient:4.0.1'
+    compile 'org.apache.httpcomponents:httpcore:4.1'
+    compile 'org.mongodb:mongo-java-driver:2.9.1'
+
+
+}
+
+
+task idea << {
+
+    // change this to the name of your module file
+    def moduleFileName = "hackback.iml"
+    def root = new XmlParser().parse(moduleFileName)
+    def newModuleRootManager = root.component.find {it.'@name' == 'NewModuleRootManager'}
+
+    // if there is already a module library in place we should remove it
+    removeOldOrderEntry(newModuleRootManager)
+
+    // add the new module library with our current gradle dependencies
+    addNewOrderEntry(newModuleRootManager)
+
+    // output the .iml XML
+    def writer = new StringWriter()
+    new XmlNodePrinter(new PrintWriter(writer)).print(root)
+    def result = writer.toString()
+    print result
+
+    // overwrite our old .iml file
+    def moduleFile = new File(moduleFileName)
+    moduleFile.text = result
+}
+
+private def addNewOrderEntry(newModuleRootManager) {
+    def newOrderEntry = newModuleRootManager.appendNode('orderEntry', [type: project.orderEntryType])
+    def newGradleLibrary = newOrderEntry.appendNode('library', [name: project.gradleLibraryId])
+    def classesNode = newGradleLibrary.appendNode('CLASSES')
+
+    def path = configurations.compile.asPath
+    def jars = path.split(':')
+    jars = Arrays.asList(jars)
+
+    jars.each { jar ->
+
+        classesNode.appendNode('root', [url: "jar://$jar!/"])
+    }
+}
+
+private def removeOldOrderEntry(newModuleRootManager) {
+    def oldOrderEntry = newModuleRootManager.orderEntry.find {
+        (it.'@type' == project.orderEntryType) && (it.library[0].'@name' == project.gradleLibraryId)
+    }
+    if (oldOrderEntry) {
+        newModuleRootManager.remove(oldOrderEntry)
+    }
+}
