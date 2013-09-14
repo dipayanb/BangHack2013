@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.hackback.core.CrawlResult;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -32,7 +33,12 @@ public class HackbackService {
 //		service.search("9901062881", "college", "bangalore", null, "77.583649,13.00316");
 //		service.substring_search("Cine");
 	}
-		
+
+    public void dumpCrawlData(CrawlResult cr){
+
+    }
+
+
 	
 	public String substring_search( String searchKey ) throws Exception {
 		

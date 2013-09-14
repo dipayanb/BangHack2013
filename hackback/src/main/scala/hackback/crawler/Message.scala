@@ -7,8 +7,8 @@ import hackback.jd.QueryResult
  */
 sealed class Message
 
-case class PullData(query: String, lat: String, lng: String) extends Message
-case class TranslateData(qr:QueryResult) extends  Message
-case class DumpData(qr:QueryResult) extends Message
+case class PullData(query: String,city:String, latLng: String,queryId:String) extends Message
+case class TranslateData(qr:List[QueryResult],queryId:String) extends  Message
+case class DumpData(qr:QueryResult,queryId:String,languageCode:String) extends Message
 case class Start() extends Message
 
