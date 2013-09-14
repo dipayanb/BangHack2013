@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.hackback.core.CrawlResult;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -101,6 +102,12 @@ public class HackbackService {
 		System.out.println(json);
 		return json;			
 	}
+
+
+    public void dumpCrawlData(CrawlResult cr){
+
+    }
+
 	
 	public String substring_search( String searchKey ) throws Exception {
 		
