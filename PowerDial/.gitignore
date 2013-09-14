@@ -18,3 +18,5 @@ target-eclipse/**
 .settings
 stacktrace.log
 projectFilesBackup/**
+node_modules
+bower_components
