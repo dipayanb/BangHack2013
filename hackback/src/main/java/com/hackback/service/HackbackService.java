@@ -12,6 +12,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.bson.types.ObjectId;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -28,11 +29,78 @@ public class HackbackService {
 	public static void main(String[] args) throws Exception {
 		
 		HackbackService service = new HackbackService();
-		service.invokeAPI("9901062881", "toys", "bangalore", "indiranagar", null);		
+		service.getCrawlList();
+//		service.invokeAPI("9901062881", "toys", "bangalore", "indiranagar", null);		
 //		service.search("9901062881", "college", "bangalore", null, "77.583649,13.00316");
 //		service.substring_search("Cine");
 	}
+	
+//	query_id, query, city, [5 geo-locations] 
+	public String getCrawlList() {
 		
+		List<Map> list = new ArrayList<Map>();
+		DBCollection coll = MongoDBFactory.getCollection("banghack","search_history");
+		DBCollection coll2 = MongoDBFactory.getCollection("banghack","just_dial");
+		DBObject doc = new BasicDBObject();
+		doc.put("crawled", false);
+		DBObject keys = new BasicDBObject();
+		keys.put("_id", 1);
+		keys.put("city", 1);
+		keys.put("area", 1);
+		keys.put("search_str", 1);
+		keys.put("location", 1);
+		DBCursor cursor = coll.find(doc, keys);
+		while( cursor.hasNext() ) {
+			DBObject object = cursor.next();
+			if(object.get("city") != null) {
+				ObjectId id = (ObjectId)object.get("_id");
+				String query_id = id.toString();
+				String city = object.get("city").toString();
+				String area = object.get("area").toString();
+				String search_str = object.get("search_str").toString(); 
+				DBObject location = (DBObject)object.get("location");
+				double lat = Double.parseDouble(location.get("lat").toString());
+				double lng = Double.parseDouble(location.get("lng").toString());
+				Map locMap = new LinkedHashMap();
+				locMap.put("lng", lng);
+				locMap.put("lat", lat);
+				BasicDBObject locQuery = new BasicDBObject();
+				locQuery.put("location", new BasicDBObject("$near", new Double[]{lng, lat}));
+				
+				keys = new BasicDBObject();
+				keys.put("location", 1);
+				// run the query
+				DBCursor locCursor = coll2.find( locQuery, keys ).limit(5);
+				// use cursor to view results
+				List<Map> nearLocs = new ArrayList<Map>();
+				while( locCursor.hasNext() ) {
+					Map nearLocMap = new LinkedHashMap();
+					DBObject loc = locCursor.next();
+					loc = (DBObject)loc.get("location");
+					double nearLat = Double.parseDouble(loc.get("lat").toString());
+					double nearLng = Double.parseDouble(loc.get("lng").toString());
+					nearLocMap.put("lng", nearLng);
+					nearLocMap.put("lat", nearLat);
+					nearLocs.add(nearLocMap);
+				}
+				
+				Map map = new LinkedHashMap();
+				map.put("query_id", query_id);
+				map.put("search_str", search_str);
+				map.put("city", city);
+				map.put("area", area);
+				map.put("location", locMap);
+				map.put("nearby", nearLocs);
+				
+				list.add(map);
+			}
+		}
+		
+		Gson gson = new Gson();
+		String json = gson.toJson(list);
+		System.out.println(json);
+		return json;			
+	}
 	
 	public String substring_search( String searchKey ) throws Exception {
 		
@@ -70,7 +138,6 @@ public class HackbackService {
 		resultMap.put("results", list);
 		Gson gson = new Gson();
 		String json = gson.toJson(resultMap);
-		System.out.println(json);
 		return json;		
 	}
 	
@@ -80,7 +147,6 @@ public class HackbackService {
 		List<Map> list = callAPI(mobile_num, search_str, city, area, location);
 		Gson gson = new Gson();
 		String json = gson.toJson(list);
-		System.out.println(json);
 		return json;
 	}
 		
@@ -207,7 +273,7 @@ public class HackbackService {
 		List<String> justdial_ids = new ArrayList<String>();
 		
 		for(Map m: list) {
-			justdial_ids.add(m.get("companyname").toString());
+			justdial_ids.add(m.get("justdial_id").toString());
 		}
 		
 		String replaced_city = (city == null? null : city.replaceAll(" ", "+"));
