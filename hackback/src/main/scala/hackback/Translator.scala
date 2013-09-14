@@ -8,10 +8,3 @@ import hackback.jd.QueryResult
 trait Translator {
   def translate(obj:QueryResult):QueryResult
 }
-
-
-
-object Languages extends Enumeration{
-  type Languages = Value
-  val Eng,Hin = Value
-}
