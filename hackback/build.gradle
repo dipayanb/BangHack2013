@@ -88,8 +88,11 @@ dependencies {
     compile group: 'org.scala-lang', name: 'scala-library', version: '2.10.2'
     compile 'com.google.code.gson:gson:2.2.4'
     compile "org.scalatest:scalatest_2.10:1.9.2"
-
-
+    compile 'commons-logging:commons-logging:1.1.1'
+	compile 'com.google.code.gson:gson:2.2.4'
+	compile 'org.apache.httpcomponents:httpclient:4.0.1'
+	compile 'org.apache.httpcomponents:httpcore:4.1'
+	compile 'org.mongodb:mongo-java-driver:2.9.1'
 }
 
 
