@@ -17,14 +17,14 @@ class PowerdialController {
         def longitude   = params.lng
 
         def output
+        def location = null
+        if (!(longitude == null || latitude == null))
+            location = "${longitude},${latitude}"
         if(place != null)
         {
-            def location
-            if (!(longitude == null || latitude == null))
-                location = "${longitude},${latitude}"
             output = service.search('9731099002', query, 'bangalore', place, location)
         } else {
-            output = service.substring_search(query)
+            output = service.substring_search(query, 'bangalore', place, location, lang)
         }
         //render new JsonBuilder(output)
         render new JSONObject(output)

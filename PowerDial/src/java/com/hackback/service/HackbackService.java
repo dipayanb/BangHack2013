@@ -182,12 +182,27 @@ public class HackbackService {
     }
 
 
-	public String substring_search( String searchKey ) throws Exception {
+	public String substring_search( String searchKey, String city, String area, String latlng, String lang ) throws Exception {
 
 		Map resultMap = new LinkedHashMap();
-		DBCollection coll = MongoDBFactory.getCollection("banghack","just_dial");
+        String collection = "just_dial";
+        String search_field = "search_text";
+        if("hi".equals(lang)){
+            collection += "_hindi";
+            search_field = "to_index";
+        }
+		DBCollection coll = MongoDBFactory.getCollection("banghack",collection);
 		DBObject doc = new BasicDBObject();
-		doc.put("search_text", java.util.regex.Pattern.compile(searchKey));
+		doc.put(search_field, java.util.regex.Pattern.compile(searchKey));
+
+        if( latlng != null ) {
+            String[] sArr = latlng.split(",");
+            DBObject loc = new BasicDBObject();
+            loc.put("lng", Double.parseDouble(sArr[0]));
+            loc.put("lat", Double.parseDouble(sArr[1]));
+            doc.put("location", loc);
+        }
+
 		DBObject orderBy = new BasicDBObject();
 		orderBy.put("avg_rating", -1);
 		orderBy.put("total_ratings", -1);
@@ -343,7 +358,7 @@ public class HackbackService {
 	/**
 	 * Retrieves a single Movie
 	 */
-	public String search( String mobile_num, String search_str, String city, String area, String location )
+	public String search( String mobile_num, String search_str, String city, String area, String location)
 		throws Exception {
 
 		Map resultMap = new LinkedHashMap();
