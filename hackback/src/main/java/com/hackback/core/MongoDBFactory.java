@@ -19,7 +19,7 @@ public class MongoDBFactory {
         public static Mongo getMongo() {
                 if (m == null) {
                         try {
-                                m = new Mongo( "localhost" , 27017 );
+                                m = new Mongo( "172.16.17.198" , 27017 );
                         } catch (UnknownHostException e) {
                                 e.printStackTrace();
                         } catch (MongoException e) {
