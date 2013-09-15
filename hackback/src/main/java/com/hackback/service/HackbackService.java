@@ -28,17 +28,17 @@ import com.mongodb.DBObject;
 public class HackbackService {
 
 	public static void main(String[] args) throws Exception {
-		
+
 		HackbackService service = new HackbackService();
 		service.getCrawlList();
 //		service.invokeAPI("9901062881", "toys", "bangalore", "indiranagar", null);		
 //		service.search("9901062881", "college", "bangalore", null, "77.583649,13.00316");
 //		service.substring_search("Cine");
 	}
-	
-//	query_id, query, city, [5 geo-locations] 
+
+//	query_id, query, city, [5 geo-locations]
 	public String getCrawlList() {
-		
+
 		List<Map> list = new ArrayList<Map>();
 		DBCollection coll = MongoDBFactory.getCollection("banghack","search_history");
 		DBCollection coll2 = MongoDBFactory.getCollection("banghack","just_dial");
@@ -58,7 +58,7 @@ public class HackbackService {
 				String query_id = id.toString();
 				String city = object.get("city").toString();
 				String area = object.get("area").toString();
-				String search_str = object.get("search_str").toString(); 
+				String search_str = object.get("search_str").toString();
 				DBObject location = (DBObject)object.get("location");
 				double lat = Double.parseDouble(location.get("lat").toString());
 				double lng = Double.parseDouble(location.get("lng").toString());
@@ -67,7 +67,7 @@ public class HackbackService {
 				locMap.put("lat", lat);
 				BasicDBObject locQuery = new BasicDBObject();
 				locQuery.put("location", new BasicDBObject("$near", new Double[]{lng, lat}));
-				
+
 				keys = new BasicDBObject();
 				keys.put("location", 1);
 				// run the query
@@ -84,7 +84,7 @@ public class HackbackService {
 					nearLocMap.put("lat", nearLat);
 					nearLocs.add(nearLocMap);
 				}
-				
+
 				Map map = new LinkedHashMap();
 				map.put("query_id", query_id);
 				map.put("search_str", search_str);
@@ -92,25 +92,26 @@ public class HackbackService {
 				map.put("area", area);
 				map.put("location", locMap);
 				map.put("nearby", nearLocs);
-				
+
 				list.add(map);
 			}
 		}
-		
+
 		Gson gson = new Gson();
 		String json = gson.toJson(list);
 		System.out.println(json);
-		return json;			
+		return json;
 	}
 
 
     public void dumpCrawlData(CrawlResult cr){
+        System.out.println(cr.toString());
 
     }
 
-	
+
 	public String substring_search( String searchKey ) throws Exception {
-		
+
 		Map resultMap = new LinkedHashMap();
 		DBCollection coll = MongoDBFactory.getCollection("banghack","just_dial");
 		DBObject doc = new BasicDBObject();
@@ -118,7 +119,7 @@ public class HackbackService {
 		DBObject orderBy = new BasicDBObject();
 		orderBy.put("avg_rating", -1);
 		orderBy.put("total_ratings", -1);
-		DBCursor cursor = coll.find(doc).sort(orderBy).limit(10);	
+		DBCursor cursor = coll.find(doc).sort(orderBy).limit(10);
 		List<Map> list = new ArrayList();
 		while( cursor.hasNext() ) {
 			DBObject res = cursor.next();
@@ -139,37 +140,37 @@ public class HackbackService {
 			location.put("lng", loc.get("lng"));
 			location.put("lat", loc.get("lat"));
 			map.put("location", location);
-			list.add(map);			
+			list.add(map);
 		}
-				
+
 		resultMap.put("results", list);
 		Gson gson = new Gson();
 		String json = gson.toJson(resultMap);
-		return json;		
+		return json;
 	}
-	
-	public String invokeAPI( String mobile_num, String search_str, String city, String area, String location ) 
+
+	public String invokeAPI( String mobile_num, String search_str, String city, String area, String location )
 		throws Exception {
-		
+
 		List<Map> list = callAPI(mobile_num, search_str, city, area, location);
 		Gson gson = new Gson();
 		String json = gson.toJson(list);
 		return json;
 	}
-		
-	public List<Map> callAPI( String mobile_num, String search_str, String city, String area, String location ) 
+
+	public List<Map> callAPI( String mobile_num, String search_str, String city, String area, String location )
 		throws Exception {
-		
+
 		// Retrieve collection
 		DBCollection coll = MongoDBFactory.getCollection("banghack","just_dial");
 		String replaced_search_str = (search_str == null? null :search_str.replaceAll(" ", "+"));
 		String replaced_city = (city == null? null : city.replaceAll(" ", "+"));
 		String replaced_area = (area == null? null : area.replaceAll(" ", "+"));
-		
+
 		String url = "http://hack2013.justdial.com/index.php?event_token=R1nev3n7t0k3nd0m&token=vLKptNycB90Y2Lc&q="+replaced_search_str;
-		
-		if(city != null) { 
-			url = url + "&city="+replaced_city; 
+
+		if(city != null) {
+			url = url + "&city="+replaced_city;
 		}
 		if(area !=null) {
 			url = url + "&area=" +replaced_area;
@@ -177,11 +178,11 @@ public class HackbackService {
 		if( location != null) {
 			url = url + "&geocodes=" +location;
 		}
-		
+
 		url = url +"&num_res=1000";
 		System.out.println(url);
-		
-		
+
+
 		HttpClient client = new DefaultHttpClient();
 		HttpGet request = new HttpGet(url);
 		HttpResponse response = client.execute(request);
@@ -189,7 +190,7 @@ public class HackbackService {
 		// Get the response
 		BufferedReader rd = new BufferedReader
 		  (new InputStreamReader(response.getEntity().getContent()));
-		    
+
 		List<String> justdial_ids = new ArrayList<String>();
 		List<Map> list = new ArrayList<Map>();
 		String line = "";
@@ -208,19 +209,19 @@ public class HackbackService {
 				String website = linkedMap.get("website").toString();
 				String concatText = companyname + " - " +address;
 				double latitude = Double.parseDouble(linkedMap.get("latitude").toString());
-				double longitude = Double.parseDouble(linkedMap.get("longitude").toString());				
+				double longitude = Double.parseDouble(linkedMap.get("longitude").toString());
 				float avg_rating = (linkedMap.get("avg_rating") != null ? Float.parseFloat(linkedMap.get("avg_rating").toString()) : 3);
 				float total_ratings = Float.parseFloat(linkedMap.get("total_ratings").toString());
-				
+
 				// Create a new object
 				DBObject findDoc = new BasicDBObject();
 				// Put id to search
 				findDoc.put("companyname", companyname);
-				
+
 				// Find and return the person with the given id
 				DBCursor cursor = coll.find(findDoc).limit(1);
 				if( cursor.size() == 0 ) {
-	
+
 					// Create a new object
 					DBObject doc = new BasicDBObject();
 					// Put id to search
@@ -240,10 +241,10 @@ public class HackbackService {
 					loc.put("lng", longitude);
 					loc.put("lat", latitude);
 					doc.put("location", loc);
-					
+
 					coll.save(doc);
 				}
-				
+
 				Map resultMap = new LinkedHashMap();
 				resultMap.put("justdial_id", key);
 				resultMap.put("companyname", companyname);
@@ -260,37 +261,37 @@ public class HackbackService {
 				locationMap.put("lng", longitude);
 				locationMap.put("lat", latitude);
 				resultMap.put("location", locationMap);
-				list.add(resultMap);							
+				list.add(resultMap);
 			}
 		}
-		
+
 		return list;
 	}
-	
+
 	/**
 	 * Retrieves a single Movie
 	 */
-	public String search( String mobile_num, String search_str, String city, String area, String location ) 
+	public String search( String mobile_num, String search_str, String city, String area, String location )
 		throws Exception {
 
 		Map resultMap = new LinkedHashMap();
-		
+
 		// Retrieve collection
 		List<Map> list = callAPI(mobile_num, search_str, city, area, location);
 		List<String> justdial_ids = new ArrayList<String>();
-		
+
 		for(Map m: list) {
 			justdial_ids.add(m.get("justdial_id").toString());
 		}
-		
+
 		String replaced_city = (city == null? null : city.replaceAll(" ", "+"));
 		String replaced_area = (area == null? null : area.replaceAll(" ", "+"));
-		
+
 		String url = null;
-		
+
 		HttpClient client = new DefaultHttpClient();
 		client = new DefaultHttpClient();
-		
+
 		DBCollection coll = MongoDBFactory.getCollection("banghack","search_history");
 		DBObject doc = new BasicDBObject();
 		doc.put("mobile_num", mobile_num);
@@ -305,16 +306,16 @@ public class HackbackService {
 			loc.put("lat", Double.parseDouble(sArr[1]));
 			doc.put("location", loc);
 			resultMap.put("lat", loc.get("lat"));
-			resultMap.put("lng", loc.get("lng"));			
+			resultMap.put("lng", loc.get("lng"));
 		} else {
 			url = "http://maps.googleapis.com/maps/api/geocode/json?address="+replaced_area+","+replaced_city+"&sensor=true";
 			HttpGet request = new HttpGet(url);
 			HttpResponse response = client.execute(request);
-			
+
 			// Get the response
 			BufferedReader rd = new BufferedReader
 			  (new InputStreamReader(response.getEntity().getContent()));
-	
+
 			String line = "";
 			StringBuffer sb = new StringBuffer();
 			while ((line = rd.readLine()) != null) {
@@ -335,13 +336,13 @@ public class HackbackService {
 		}
 		doc.put("crawled", false);
 		doc.put("search_time", new Date());
-		
+
 		coll.save(doc);
-		
+
 		resultMap.put("results", list);
 		Gson gson = new Gson();
 		String json = gson.toJson(resultMap);
-		return json;		
+		return json;
 
 	}
 
