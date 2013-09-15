@@ -19558,7 +19558,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   
 
 
-  return "<div class=\"hero-unit\">\n    <h1 class=\"text-center\">Power Dial</h1>\n</div>\n\n<div class=\"col8 offset2 clearfix\">\n    <input type=\"text\" id=\"pd-search\" class=\"span8\" placeholder=\"Search something\">\n</div>\n<div class=\"col1 offset6\" id=\"spinner\" style=\"display: none;\">\n    <img src=\"images/spinner.gif\"/>\n</div>\n\n<hr/>\n";
+  return "<div class=\"hero-unit text-center\">\n    <h1>Power Dial</h1>\n    <h3>JustDial on Steroids</h3>\n</div>\n\n<div class=\"col8 offset2 clearfix\">\n    <div class=\"col6\">\n        <input type=\"text\" id=\"pd-search\" class=\"span6\" placeholder=\"Search something\">\n        <select class=\"span2\" id=\"pd-lang\">\n            <option value=\"en\">English</option>\n            <option value=\"hi\">Hindi</option>\n        </select>\n    </div>\n\n</div>\n\n\n<div class=\"col1 offset6\" id=\"spinner\" style=\"display: none;\">\n    <img src=\"images/spinner.gif\"/>\n</div>\n\n<hr/>\n";
   });
 
 this["JST"]["src/templates/resultcollectionview.hbs"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
@@ -19567,7 +19567,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   
 
 
-  return "<p> This is super</p>\n<ul id=\"pd-results\">\n\n</ul>";
+  return "<ul id=\"pd-results\" class=\"unstyled\">\n\n</ul>";
   });
 
 this["JST"]["src/templates/resultview.hbs"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
@@ -19578,23 +19578,64 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
 function program1(depth0,data) {
   
   var buffer = "";
-  buffer += "\n    <p>"
+  buffer += "\n        <p>"
     + escapeExpression((typeof depth0 === functionType ? depth0.apply(depth0) : depth0))
-    + "</p>\n";
+    + "</p>\n    ";
   return buffer;
   }
 
-  buffer += "<p>Name: ";
-  if (stack1 = helpers.name) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
-  else { stack1 = depth0.name; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
+function program3(depth0,data) {
+  
+  var buffer = "", stack1;
+  buffer += "\n        <p>Email: ";
+  if (stack1 = helpers.email) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
+  else { stack1 = depth0.email; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
   buffer += escapeExpression(stack1)
-    + "</p>\n<p>Address: ";
+    + "</p>\n    ";
+  return buffer;
+  }
+
+function program5(depth0,data) {
+  
+  var buffer = "", stack1;
+  buffer += "\n        <p>Website: ";
+  if (stack1 = helpers.website) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
+  else { stack1 = depth0.website; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
+  buffer += escapeExpression(stack1)
+    + "</p>\n    ";
+  return buffer;
+  }
+
+  buffer += "<div class=\"well well-small clearfix\">\n    <h3>Name: ";
+  if (stack1 = helpers.companyname) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
+  else { stack1 = depth0.companyname; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
+  buffer += escapeExpression(stack1)
+    + "</h3>\n    <p>Address: ";
   if (stack1 = helpers.address) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
   else { stack1 = depth0.address; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
   buffer += escapeExpression(stack1)
-    + "</p>\n<p>Phone:</p>\n";
+    + "</p>\n    <p>City: ";
+  if (stack1 = helpers.city) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
+  else { stack1 = depth0.city; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
+  buffer += escapeExpression(stack1)
+    + "</p>\n    <p>Phone:</p>\n    ";
   stack1 = helpers.each.call(depth0, depth0.phone, {hash:{},inverse:self.noop,fn:self.program(1, program1, data),data:data});
   if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n    ";
+  stack1 = helpers['if'].call(depth0, depth0.email, {hash:{},inverse:self.noop,fn:self.program(3, program3, data),data:data});
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n    ";
+  stack1 = helpers['if'].call(depth0, depth0.email, {hash:{},inverse:self.noop,fn:self.program(5, program5, data),data:data});
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n    <p>Rating: ";
+  if (stack1 = helpers.avg_rating) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
+  else { stack1 = depth0.avg_rating; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
+  buffer += escapeExpression(stack1)
+    + ", Total Ratings: ";
+  if (stack1 = helpers.total_ratings) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
+  else { stack1 = depth0.total_ratings; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
+  buffer += escapeExpression(stack1)
+    + "</p>\n</div>\n\n<hr/>";
   return buffer;
   });
 (function() {
@@ -19641,8 +19682,12 @@ function program1(depth0,data) {
       return this.$el.html(this.template());
     },
     search: function(event) {
-      var c, data, isFinalSearch, val;
+      var c, data, isFinalSearch, lang, val;
       event.preventDefault();
+      val = $(event.currentTarget).val();
+      if (val.length <= 3) {
+        return;
+      }
       c = event.which || event.keyCode;
       if ((c > 31 && c < 65) || (c > 90 && c < 97) || (c > 122 && c !== 127)) {
         return false;
@@ -19651,24 +19696,30 @@ function program1(depth0,data) {
       if (event.which === 13) {
         isFinalSearch = true;
       }
-      val = $(event.currentTarget).val();
-      data = this.parseData(val);
+      lang = $('#pd-lang').val();
+      data = this.parseData(val, lang);
+      if (data === null || _.isEmpty(data.q)) {
+        return;
+      }
       if (!_.isEmpty(data.p) && isFinalSearch === false) {
         return;
       }
       return window.powerdial.vent.trigger("fetch:data", data);
     },
-    parseData: function(value) {
+    parseData: function(value, lang) {
       var data, matches;
       matches = value.split('p:');
       data = {};
       if (matches !== null) {
         data.q = matches[0].trim();
+        data.lang = lang;
         if (matches.length > 1 && matches[1].length > 0) {
           data.p = matches[1].trim();
         }
+        return data;
+      } else {
+        return null;
       }
-      return data;
     },
     showSpinner: function(flag) {
       if (flag === true) {
@@ -19732,18 +19783,21 @@ function program1(depth0,data) {
     function Utilities() {}
 
     Utilities.prototype.processResponseData = function(data) {
-      var lat, lng, processed;
+      var lat, lng, processed,
+        _this = this;
       processed = {};
       lat = data.lat;
       lng = data.lng;
       if (lat && lng) {
         this.setToCookie('lat', lat);
         this.setToCookie('lng', lng);
-        console.log("Inside: Lat: " + lat + ", Lng: " + lng);
         processed.lat = lat;
         processed.lng = lng;
       }
       processed.results = data.results;
+      _.each(processed.results, function(entry) {
+        return entry.phone = _this.mixPhoneNumbers(entry.landline, entry.mobile);
+      });
       return processed;
     };
 
@@ -19762,6 +19816,36 @@ function program1(depth0,data) {
         lat: this.getCookie('lat'),
         lng: this.getCookie('lng')
       };
+    };
+
+    Utilities.prototype.mixPhoneNumbers = function(landline, mobile) {
+      var landlines, mobiles, phone;
+      phone = [];
+      if (!_.isEmpty(landline)) {
+        landlines = landline.split(',');
+        phone.push(landlines[0]);
+        if (landlines.length > 1) {
+          this.modifyPhones(landlines, phone);
+        }
+      }
+      if (!_.isEmpty(mobile)) {
+        mobiles = mobile.split(',');
+        phone.push(mobiles[0]);
+        if (mobiles.length > 1) {
+          this.modifyPhones(mobiles, phone);
+        }
+      }
+      return phone;
+    };
+
+    Utilities.prototype.modifyPhones = function(entry, phone) {
+      var lastIndex, rest, stdprefix;
+      lastIndex = entry[0].lastIndexOf('-');
+      stdprefix = entry[0].substr(0, lastIndex + 1);
+      rest = _.rest(entry);
+      return _.each(rest, function(entry) {
+        return phone.push("" + stdprefix + entry);
+      });
     };
 
     return Utilities;
