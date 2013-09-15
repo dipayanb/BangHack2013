@@ -4,11 +4,11 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.hackback.core.CrawlResult;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -19,8 +19,11 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.hackback.core.CrawlResult;
 import com.hackback.core.MongoDBFactory;
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.CommandResult;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -184,6 +187,7 @@ public class HackbackService {
 
 	public String substring_search( String searchKey, String city, String area, String latlng, String lang ) throws Exception {
 
+		List<Map> list = new ArrayList();
 		Map resultMap = new LinkedHashMap();
         String collection = "just_dial";
         String search_field = "search_text";
@@ -192,39 +196,74 @@ public class HackbackService {
             search_field = "to_index";
         }
 		DBCollection coll = MongoDBFactory.getCollection("banghack",collection);
-		DBObject doc = new BasicDBObject();
-		doc.put(search_field, java.util.regex.Pattern.compile(searchKey));
-
-        /* if( latlng != null ) {
-            String[] sArr = latlng.split(",");
-            doc.put("location", new BasicDBObject("$near", new Double[]{Double.parseDouble(sArr[0]), Double.parseDouble(sArr[1])}));
-        }   */
-
-		DBObject orderBy = new BasicDBObject();
-		orderBy.put("avg_rating", -1);
-		orderBy.put("total_ratings", -1);
-		DBCursor cursor = coll.find(doc).sort(orderBy).limit(10);
-		List<Map> list = new ArrayList();
-		while( cursor.hasNext() ) {
-			DBObject res = cursor.next();
-			Map map = new LinkedHashMap();
-			map.put("justdial_id", res.get("justdial_id"));
-			map.put("companyname", res.get("companyname"));
-			map.put("address", res.get("address"));
-			map.put("city", res.get("city"));
-			map.put("pincode", res.get("pincode"));
-			map.put("landline", res.get("landline"));
-			map.put("mobile", res.get("mobile"));
-			map.put("email", res.get("email"));
-			map.put("website", res.get("website"));
-			map.put("avg_rating", res.get("avg_rating"));
-			map.put("total_ratings", res.get("total_ratings"));
-			Map location = new LinkedHashMap();
-			DBObject loc = (BasicDBObject)res.get("location");
-			location.put("lng", loc.get("lng"));
-			location.put("lat", loc.get("lat"));
-			map.put("location", location);
-			list.add(map);
+		if(searchKey.contains(" ")) {
+			DBObject textSearchCommand = new BasicDBObject();
+		    textSearchCommand.put("text", collection);
+		    textSearchCommand.put("search", searchKey);
+		    final CommandResult commandResult = coll.getDB().command(textSearchCommand);
+		    BasicDBList objectList = (BasicDBList)commandResult.get("results");
+		    Iterator<Object> it = objectList.iterator();
+		    for( int i=0; i<10; i++) {
+		    	if(!it.hasNext()) {
+		    		break;
+		    	}
+		    	BasicDBObject res = (BasicDBObject) it.next();
+		    	res = (BasicDBObject)res.get("obj");
+				Map map = new LinkedHashMap();
+				map.put("justdial_id", res.get("justdial_id"));
+				map.put("companyname", res.get("companyname"));
+				map.put("address", res.get("address"));
+				map.put("city", res.get("city"));
+				map.put("pincode", res.get("pincode"));
+				map.put("landline", res.get("landline"));
+				map.put("mobile", res.get("mobile"));
+				map.put("email", res.get("email"));
+				map.put("website", res.get("website"));
+				map.put("avg_rating", res.get("avg_rating"));
+				map.put("total_ratings", res.get("total_ratings"));
+				Map location = new LinkedHashMap();
+				DBObject loc = (BasicDBObject)res.get("location");
+				location.put("lng", loc.get("lng"));
+				location.put("lat", loc.get("lat"));
+				map.put("location", location);
+				list.add(map);
+		    }
+		} else {
+			
+			
+			DBObject doc = new BasicDBObject();
+			doc.put(search_field, java.util.regex.Pattern.compile(searchKey));
+	
+	        /* if( latlng != null ) {
+	            String[] sArr = latlng.split(",");
+	            doc.put("location", new BasicDBObject("$near", new Double[]{Double.parseDouble(sArr[0]), Double.parseDouble(sArr[1])}));
+	        }   */
+	
+			DBObject orderBy = new BasicDBObject();
+			orderBy.put("avg_rating", -1);
+			orderBy.put("total_ratings", -1);
+			DBCursor cursor = coll.find(doc).sort(orderBy).limit(10);
+			while( cursor.hasNext() ) {
+				DBObject res = cursor.next();
+				Map map = new LinkedHashMap();
+				map.put("justdial_id", res.get("justdial_id"));
+				map.put("companyname", res.get("companyname"));
+				map.put("address", res.get("address"));
+				map.put("city", res.get("city"));
+				map.put("pincode", res.get("pincode"));
+				map.put("landline", res.get("landline"));
+				map.put("mobile", res.get("mobile"));
+				map.put("email", res.get("email"));
+				map.put("website", res.get("website"));
+				map.put("avg_rating", res.get("avg_rating"));
+				map.put("total_ratings", res.get("total_ratings"));
+				Map location = new LinkedHashMap();
+				DBObject loc = (BasicDBObject)res.get("location");
+				location.put("lng", loc.get("lng"));
+				location.put("lat", loc.get("lat"));
+				map.put("location", location);
+				list.add(map);
+			}
 		}
 
 		resultMap.put("results", list);
