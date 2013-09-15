@@ -27,14 +27,6 @@ import com.mongodb.DBObject;
 
 public class HackbackService {
 
-	public static void main(String[] args) throws Exception {
-
-		HackbackService service = new HackbackService();
-		service.getCrawlList();
-//		service.invokeAPI("9901062881", "toys", "bangalore", "indiranagar", null);		
-//		service.search("9901062881", "college", "bangalore", null, "77.583649,13.00316");
-//		service.substring_search("Cine");
-	}
 
 //	query_id, query, city, [5 geo-locations]
 	public String getCrawlList() {
@@ -140,6 +132,9 @@ public class HackbackService {
 		if( cursor.size() == 0 ) {
     	
 			DBObject doc = new BasicDBObject();
+	    	if( !"en".equalsIgnoreCase(cr.languageCode)) {
+	    		doc.put("to_index", to_index);
+	    	}
 			doc.put("justdial_id", just_dial_str);
 			doc.put("companyname", companyname_str);
 			doc.put("address", address_str);
@@ -180,13 +175,10 @@ public class HackbackService {
 			coll.update( findDoc, obj);
 		}
 		
-		DBObject doc =new BasicDBObject();
-		doc.put("crawled", true);
+		DBObject doc =new BasicDBObject("$set", new BasicDBObject("crawled", true));		
 		findDoc = new BasicDBObject();
 		findDoc.put("_id", new ObjectId(query_id_str));
 		coll.update( findDoc, doc);
-    	
-        System.out.println(cr.toString());
     }
 
 
