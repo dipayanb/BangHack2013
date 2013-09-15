@@ -6,6 +6,7 @@ apply plugin: 'project-report'
 defaultTasks 'jar'
 
 sourceCompatibility = 1.7
+mainClassName = "hackback.crawler.CrawlMan.PowerDial"
 
 
 group = "hackback"

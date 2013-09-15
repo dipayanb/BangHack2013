@@ -24,13 +24,9 @@ class CrawlMan private() {
   private val jdActor = actorSystem.actorOf(Props(classOf[PullFromUrlActor], hackbackService, translateActor, dbDumper))
   private val starter = actorSystem.actorOf(Props(classOf[Starter], hackbackService, jdActor))
 
-  def start() {
-    while(true){
-      starter !Start()
-      Thread.sleep(5*60*1000)
-    }
+  def start(){
+  actorSystem.scheduler.schedule(5 seconds, 5 minutes, starter, Start())
   }
-
 }
 
 object CrawlMan {
@@ -46,7 +42,7 @@ class PullFromUrlActor(val service: HackbackService, val translator: ActorRef, v
 
   def receive = {
     case PullData(query, city, latLng, queryId) =>
-      val json = service.invokeAPI(null, query, "bangalore", null, latLng)
+      val json = service.invokeAPI(null, query, city, null, latLng)
       val queryResults = QueryResult(json)
       translator ! TranslateData(queryResults, queryId)
       queryResults.foreach {
@@ -98,7 +94,7 @@ class Starter(val service: HackbackService, val jd: ActorRef) extends Actor {
         val locs = ListBuffer[String]()
         for (j <- 0 to nearby.size - 1) {
           val loc = nearby.get(j).getAsJsonObject
-          locs += loc.get("lat").getAsString + loc.get("lng").getAsString
+          locs += loc.get("lng").getAsString +"," +loc.get("lat").getAsString
         }
         locs.foreach {
           l =>
@@ -127,6 +123,7 @@ object Mapper {
     crawlResult.website = qr.website
     crawlResult.queryId = qid
     crawlResult.languageCode = languageCode
+    crawlResult.toIndex = qr.toIndex
     crawlResult
   }
 }
