@@ -98,14 +98,87 @@ public class HackbackService {
 		}
 		
 		Gson gson = new Gson();
-		String json = gson.toJson(list);
-		System.out.println(json);
+		String json = gson.toJson(list);		
 		return json;			
 	}
 
 
     public void dumpCrawlData(CrawlResult cr){
-
+    	DBCollection coll =  null;
+    	if( "en".equalsIgnoreCase(cr.languageCode)) {
+    		coll = MongoDBFactory.getCollection("banghack","just_dial");    		
+    	} else {
+    		coll = MongoDBFactory.getCollection("banghack","just_dial_hindi");    		
+    	}
+    	
+    	String address_str = cr.address;
+    	String avg_rating_str = cr.avgRating;
+    	String total_ratings_str = cr.totalRatings;
+    	String city_str = cr.city;
+    	String companyname_str = cr.companyName;
+    	String website_str = cr.website;
+    	String email_str = cr.email;
+    	String id_str = cr.id;
+    	String just_dial_str = cr.justDialId;
+    	String landline_str = cr.landLine;
+    	String mobile_str = cr.mobile;
+    	String language_code_str = cr.languageCode;
+    	String lat_str = cr.lat;
+    	String lng_str = cr.lng;
+    	String query_id_str = cr.queryId;
+    	String pincode_str = cr.pinCode;
+    	
+		// Create a new object
+		DBObject findDoc = new BasicDBObject();
+		// Put id to search
+		findDoc.put("justdial_id", just_dial_str);
+		DBObject keys = new BasicDBObject();
+		keys.put("_id", 1);		
+		
+		DBCursor cursor = coll.find(findDoc, keys).limit(1);
+		if( cursor.size() == 0 ) {
+    	
+			DBObject doc = new BasicDBObject();
+			doc.put("justdial_id", just_dial_str);
+			doc.put("companyname", companyname_str);
+			doc.put("address", address_str);
+			doc.put("city", city_str);
+			doc.put("pincode", pincode_str);
+			doc.put("landline", landline_str);
+			doc.put("mobile", mobile_str);
+			if( avg_rating_str != null)
+				doc.put("avg_rating", Float.parseFloat(avg_rating_str));
+			if( total_ratings_str != null)
+				doc.put("total_ratings", Float.parseFloat(total_ratings_str));
+			doc.put("website", website_str);
+			doc.put("email", email_str);
+			String concatText = companyname_str + " - " +address_str;			
+			doc.put("search_text", concatText);
+			DBObject loc = new BasicDBObject();
+			loc.put("lng", Double.parseDouble(lng_str));
+			loc.put("lat", Double.parseDouble(lat_str));
+			doc.put("location", loc);
+			
+			coll.save(doc);
+		}
+		
+		coll = MongoDBFactory.getCollection("banghack","search_history");   
+		findDoc = new BasicDBObject();
+		findDoc.put("_id", new ObjectId(query_id_str));
+		findDoc.put("results", just_dial_str);
+		
+		keys = new BasicDBObject();
+		keys.put("_id", 1);		
+		cursor = coll.find(findDoc, keys);
+		if( cursor.size() == 0 ) {
+			DBObject doc = new BasicDBObject();
+			doc.put("results", cr.justDialId);			
+			DBObject obj = new BasicDBObject("$push", doc);
+			findDoc = new BasicDBObject();
+			findDoc.put("_id", new ObjectId(query_id_str));
+			coll.update( findDoc, obj);
+		}
+    	
     }
 
 	
