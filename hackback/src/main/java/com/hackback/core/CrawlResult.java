@@ -37,6 +37,27 @@ public class CrawlResult {
 
     public String languageCode;
 
+    public String toIndex;
 
-
+    @Override
+    public String toString() {
+        return "CrawlResult{" +
+                "id='" + id + '\'' +
+                ", justDialId='" + justDialId + '\'' +
+                ", companyName='" + companyName + '\'' +
+                ", address='" + address + '\'' +
+                ", city='" + city + '\'' +
+                ", pinCode='" + pinCode + '\'' +
+                ", landLine='" + landLine + '\'' +
+                ", mobile='" + mobile + '\'' +
+                ", website='" + website + '\'' +
+                ", email='" + email + '\'' +
+                ", lat='" + lat + '\'' +
+                ", lng='" + lng + '\'' +
+                ", avgRating='" + avgRating + '\'' +
+                ", totalRatings='" + totalRatings + '\'' +
+                ", queryId='" + queryId + '\'' +
+                ", languageCode='" + languageCode + '\'' +
+                '}';
+    }
 }

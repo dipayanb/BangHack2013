@@ -2,6 +2,7 @@ package hackback.jd
 
 import com.google.gson.{JsonObject, JsonParser}
 import scala.collection.JavaConverters._
+import scala.collection.mutable.ListBuffer
 
 /**
  * @author Winash
@@ -22,6 +23,8 @@ class QueryResult() {
   var lng: String = _
   var avgRating: String = _
   var totalRatings: String = _
+  var toIndex:String = _
+
 
 }
 
@@ -41,30 +44,33 @@ object QueryResult {
 
   def apply(json: String): List[QueryResult] = {
     val jsonElement = parser.parse(json)
-    val jsonObject = jsonElement.getAsJsonObject
-    val set = jsonObject.entrySet.asScala
-    set.map {
-      entry =>
-        val queryResult = new QueryResult()
-        queryResult.jdId = entry.getKey
-        val data = entry.getValue.getAsJsonObject
-        queryResult.companyName = parseText(data, "companyname")
-        queryResult.address = parseText(data, "address")
-        queryResult.city = parseText(data, "city")
-        queryResult.pinCode = parseText(data, "pincode")
-        queryResult.landLine = parseText(data, "landline")
-        queryResult.mobile = parseText(data, "mobile")
-        queryResult.email = parseText(data, "email")
-        queryResult.website = parseText(data, "website")
-        queryResult.lat = parseText(data, "latitude")
-        queryResult.lng = parseText(data, "longitude")
-        queryResult.avgRating = parseText(data, "avg_rating")
-        queryResult.totalRatings = parseText(data, "total_ratings")
-        queryResult
-    }.toList
+    val jsonArray = jsonElement.getAsJsonArray
+    val list = ListBuffer[QueryResult]()
+    for (i <- 0 to jsonArray.size - 1) {
+      val entry = jsonArray.get(i)
+      val queryResult = new QueryResult()
+      val data = entry.getAsJsonObject
+      queryResult.jdId = parseText(data, "justdial_id")
+      queryResult.companyName = parseText(data, "companyname")
+      queryResult.address = parseText(data, "address")
+      queryResult.city = parseText(data, "city")
+      queryResult.pinCode = parseText(data, "pincode")
+      queryResult.landLine = parseText(data, "landline")
+      queryResult.mobile = parseText(data, "mobile")
+      queryResult.email = parseText(data, "email")
+      queryResult.website = parseText(data, "website")
+      val jsonObject = data.getAsJsonObject("location")
+      queryResult.lat = parseText(jsonObject, "lat")
+      queryResult.lng = parseText(jsonObject, "lng")
+      queryResult.avgRating = parseText(data, "avg_rating")
+      queryResult.totalRatings = parseText(data, "total_ratings")
+      queryResult.toIndex = queryResult.companyName +" "+ queryResult.address
+      list+=queryResult
+    }
+    list.toList
   }
 
-  def apply(qr:QueryResult):QueryResult = {
+  def apply(qr: QueryResult): QueryResult = {
     val result: QueryResult = new QueryResult()
     result.address = qr.address
     result.companyName = qr.companyName
@@ -79,6 +85,7 @@ object QueryResult {
     result.pinCode = qr.pinCode
     result.totalRatings = qr.totalRatings
     result.website = qr.website
+    result.toIndex = qr.toIndex
     result
   }
 
