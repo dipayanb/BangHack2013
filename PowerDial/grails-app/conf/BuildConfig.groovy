@@ -42,6 +42,13 @@ grails.project.dependency.resolution = {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes e.g.
 
         // runtime 'mysql:mysql-connector-java:5.1.22'
+        compile 'com.google.code.gson:gson:2.2.4'
+        compile 'com.memetix:microsoft-translator-java-api:0.6.2'
+        compile 'commons-logging:commons-logging:1.1.1'
+        compile 'com.google.code.gson:gson:2.2.4'
+        compile 'org.apache.httpcomponents:httpclient:4.0.1'
+        compile 'org.apache.httpcomponents:httpcore:4.1'
+        compile 'org.mongodb:mongo-java-driver:2.9.1'
     }
 
     plugins {

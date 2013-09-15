@@ -1,10 +1,36 @@
 package powerdial
 
+import com.hackback.service.HackbackService
 import grails.converters.JSON
+import groovy.json.JsonBuilder
+import org.codehaus.groovy.grails.web.json.JSONObject
 
 class PowerdialController {
 
+    HackbackService service = new HackbackService()
+
     def getData() {
+        def query       = params.q
+        def lang        = params.lang
+        def place       = params.p
+        def latitude    = params.lat
+        def longitude   = params.lng
+
+        def output
+        if(place != null)
+        {
+            def location
+            if (!(longitude == null || latitude == null))
+                location = "${longitude},${latitude}"
+            output = service.search('9731099002', query, 'bangalore', place, location)
+        } else {
+            output = service.substring_search(query)
+        }
+        //render new JsonBuilder(output)
+        render new JSONObject(output)
+    }
+
+    def getDataBackup() {
         //Thread.sleep(2000)
         def result = [ lat: "80.001",
                         lng: "80.002",
