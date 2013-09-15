@@ -13,7 +13,7 @@ window.powerdial.HomeView = Backbone.View.extend
 
   search: (event)->
     event.preventDefault()
-    val = $(event.currentTarget).val()
+    val = $(event.currentTarget).val().toLowerCase()
     return if val.length <= 3 # dont do anything if the number of characters is less than 3
 
     c = event.which || event.keyCode;

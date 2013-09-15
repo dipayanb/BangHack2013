@@ -195,13 +195,10 @@ public class HackbackService {
 		DBObject doc = new BasicDBObject();
 		doc.put(search_field, java.util.regex.Pattern.compile(searchKey));
 
-        if( latlng != null ) {
+        /* if( latlng != null ) {
             String[] sArr = latlng.split(",");
-            DBObject loc = new BasicDBObject();
-            loc.put("lng", Double.parseDouble(sArr[0]));
-            loc.put("lat", Double.parseDouble(sArr[1]));
-            doc.put("location", loc);
-        }
+            doc.put("location", new BasicDBObject("$near", new Double[]{Double.parseDouble(sArr[0]), Double.parseDouble(sArr[1])}));
+        }   */
 
 		DBObject orderBy = new BasicDBObject();
 		orderBy.put("avg_rating", -1);
@@ -386,41 +383,31 @@ public class HackbackService {
 		doc.put("city", city);
 		doc.put("area", area);
 		doc.put("results", justdial_ids);
-		if( location != null ) {
-			String[] sArr = location.split(",");
-			DBObject loc = new BasicDBObject();
-			loc.put("lng", Double.parseDouble(sArr[0]));
-			loc.put("lat", Double.parseDouble(sArr[1]));
-			doc.put("location", loc);
-			resultMap.put("lat", loc.get("lat"));
-			resultMap.put("lng", loc.get("lng"));
-		} else {
-			url = "http://maps.googleapis.com/maps/api/geocode/json?address="+replaced_area+","+replaced_city+"&sensor=true";
-			HttpGet request = new HttpGet(url);
-			HttpResponse response = client.execute(request);
+        url = "http://maps.googleapis.com/maps/api/geocode/json?address="+replaced_area+","+replaced_city+"&sensor=true";
+        HttpGet request = new HttpGet(url);
+        HttpResponse response = client.execute(request);
 
-			// Get the response
-			BufferedReader rd = new BufferedReader
-			  (new InputStreamReader(response.getEntity().getContent()));
+        // Get the response
+        BufferedReader rd = new BufferedReader
+          (new InputStreamReader(response.getEntity().getContent()));
 
-			String line = "";
-			StringBuffer sb = new StringBuffer();
-			while ((line = rd.readLine()) != null) {
-				sb.append(line);
-			}
-			JsonElement jelement = new JsonParser().parse(sb.toString());
-		    JsonObject  jobject = jelement.getAsJsonObject();
-		    jobject = jobject.getAsJsonArray("results").get(0).getAsJsonObject();
-		    JsonObject locObject = jobject.get("geometry").getAsJsonObject().get("location").getAsJsonObject();
-		    double lat = Double.parseDouble(locObject.get("lat").getAsString());
-		    double lng = Double.parseDouble(locObject.get("lng").getAsString());
-			DBObject loc = new BasicDBObject();
-			loc.put("lng", lng);
-			loc.put("lat", lat);
-			doc.put("location", loc);
-			resultMap.put("lat", lat);
-			resultMap.put("lng", lng);
-		}
+        String line = "";
+        StringBuffer sb = new StringBuffer();
+        while ((line = rd.readLine()) != null) {
+            sb.append(line);
+        }
+        JsonElement jelement = new JsonParser().parse(sb.toString());
+        JsonObject  jobject = jelement.getAsJsonObject();
+        jobject = jobject.getAsJsonArray("results").get(0).getAsJsonObject();
+        JsonObject locObject = jobject.get("geometry").getAsJsonObject().get("location").getAsJsonObject();
+        double lat = Double.parseDouble(locObject.get("lat").getAsString());
+        double lng = Double.parseDouble(locObject.get("lng").getAsString());
+        DBObject loc = new BasicDBObject();
+        loc.put("lng", lng);
+        loc.put("lat", lat);
+        doc.put("location", loc);
+        resultMap.put("lat", lat);
+        resultMap.put("lng", lng);
 		doc.put("crawled", false);
 		doc.put("search_time", new Date());
 

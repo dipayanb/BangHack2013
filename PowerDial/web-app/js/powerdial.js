@@ -19684,7 +19684,7 @@ function program5(depth0,data) {
     search: function(event) {
       var c, data, isFinalSearch, lang, val;
       event.preventDefault();
-      val = $(event.currentTarget).val();
+      val = $(event.currentTarget).val().toLowerCase();
       if (val.length <= 3) {
         return;
       }

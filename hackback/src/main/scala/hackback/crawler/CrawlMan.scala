@@ -61,8 +61,14 @@ class TranslateActor(val service: HackbackService, val dbDumper: ActorRef) exten
     case TranslateData(qr, queryId) =>
       qr.foreach {
         r =>
-          val translated = translator.translate(r)
-          dbDumper ! DumpData(translated, queryId, "hi")
+        try {
+            val translated = translator.translate(r)
+            println(translated)
+            dbDumper ! DumpData(translated, queryId, "hi")
+        } catch {
+            case e:Exception => e.printStackTrace
+        }
+
       }
 
   }
