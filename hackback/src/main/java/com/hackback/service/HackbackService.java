@@ -27,10 +27,8 @@ import com.mongodb.DBObject;
 
 public class HackbackService {
 
-
-//	query_id, query, city, [5 geo-locations]
+	
 	public String getCrawlList() {
-
 		List<Map> list = new ArrayList<Map>();
 		DBCollection coll = MongoDBFactory.getCollection("banghack","search_history");
 		DBCollection coll2 = MongoDBFactory.getCollection("banghack","just_dial");
@@ -60,21 +58,24 @@ public class HackbackService {
 				BasicDBObject locQuery = new BasicDBObject();
 				locQuery.put("location", new BasicDBObject("$near", new Double[]{lng, lat}));
 
+				
 				keys = new BasicDBObject();
 				keys.put("location", 1);
 				// run the query
-				DBCursor locCursor = coll2.find( locQuery, keys ).limit(5);
+				List<DBObject> locCursor = coll2.distinct("location", locQuery );
 				// use cursor to view results
 				List<Map> nearLocs = new ArrayList<Map>();
-				while( locCursor.hasNext() ) {
+				int i = 0;
+				for(DBObject loc : locCursor) {
+					if ( i==5 )
+						break;
 					Map nearLocMap = new LinkedHashMap();
-					DBObject loc = locCursor.next();
-					loc = (DBObject)loc.get("location");
 					double nearLat = Double.parseDouble(loc.get("lat").toString());
 					double nearLng = Double.parseDouble(loc.get("lng").toString());
 					nearLocMap.put("lng", nearLng);
 					nearLocMap.put("lat", nearLat);
 					nearLocs.add(nearLocMap);
+					i++;
 				}
 
 				Map map = new LinkedHashMap();
@@ -90,8 +91,8 @@ public class HackbackService {
 		}
 
 		Gson gson = new Gson();
-		String json = gson.toJson(list);		
-		return json;			
+		String json = gson.toJson(list);	
+		return json;		
 	}
 
 
